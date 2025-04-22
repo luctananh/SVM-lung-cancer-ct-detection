@@ -1,5 +1,9 @@
 # Phát Hiện Ung Thư Phổi Từ Ảnh CT Scan
-## Giới Thiệu
+
+[![Python 3.x](https://img.shields.io/badge/python-3.x-blue.svg)](https://www.python.org/downloads/)
+[![Libraries](https://img.shields.io/badge/libraries-OpenCV%2CSklearn%2CPIL-yellow.svg)](https://pypi.org/)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
 
 Đề tài này xây dựng một hệ thống phát hiện ung thư phổi từ ảnh chụp cắt lớp vi tính (CT scan) sử dụng các kỹ thuật xử lý ảnh và học máy. Hệ thống bao gồm một script để huấn luyện mô hình phân loại và một ứng dụng giao diện người dùng đồ họa (GUI) đơn giản để thực hiện dự đoán trên ảnh mới.
 
