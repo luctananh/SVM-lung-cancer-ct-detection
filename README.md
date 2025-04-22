@@ -22,7 +22,7 @@ Dự án này sử dụng các thư viện Python sau:
 
 ### 1. Huấn luyện mô hình
 
-Script huấn luyện (`train.py`) thực hiện các bước sau:
+Script huấn luyện (`training_script.py`) thực hiện các bước sau:
 
 1.  **Chuẩn bị dữ liệu:** Tải và tiền xử lý ảnh từ thư mục `dataset`, chia thành thư mục `normal` và `cancer`. Tùy chọn tăng cường dữ liệu (`--augment`) có thể được sử dụng.
 2.  **Trích xuất đặc trưng:** Sử dụng Histogram of Oriented Gradients (HOG) và Local Binary Patterns (LBP) để trích xuất các đặc trưng từ ảnh. Mức độ chi tiết của việc trích xuất có thể được điều chỉnh bằng tham số `--detailed`.
@@ -46,20 +46,20 @@ Script huấn luyện sử dụng thư viện `argparse` để xử lý các tha
 
 **Cách chạy huấn luyện với các tham số:**
 
-Mở terminal hoặc command prompt, điều hướng đến thư mục chứa file `train.py` và chạy lệnh `python train.py` kèm theo các tham số mong muốn. Ví dụ:
+Mở terminal hoặc command prompt, điều hướng đến thư mục chứa file `training_script.py` và chạy lệnh `python training_script.py` kèm theo các tham số mong muốn. Ví dụ:
 
 * Chạy huấn luyện với tìm kiếm lưới và tăng cường dữ liệu:
     ```bash
-    python train.py --grid_search --augment
+    python training_script.py --grid_search --augment
     ```
 * Chạy huấn luyện với phân chia theo nhóm bệnh nhân và sử dụng class weights tùy chỉnh:
     ```bash
-    python train.py --group_split --custom_weights
+    python training_script.py --group_split --custom_weights
     ```
 
 ### 2. Giao diện người dùng
 
-Script giao diện (`gui.py`) cung cấp một ứng dụng đồ họa đơn giản để người dùng có thể:
+Script giao diện (`inference_script.py`) cung cấp một ứng dụng đồ họa đơn giản để người dùng có thể:
 
 1.  **Tải ảnh:** Chọn một file ảnh CT scan từ máy tính.
 2.  **Hiển thị ảnh:** Xem ảnh gốc và ảnh đã qua xử lý (resize) trên giao diện.
@@ -68,7 +68,7 @@ Script giao diện (`gui.py`) cung cấp một ứng dụng đồ họa đơn gi
 
 **Cách chạy giao diện:**
 
-Đảm bảo bạn đã huấn luyện mô hình thành công và các file model (`lung_cancer_svm.joblib`, `scaler.joblib`, `pca.joblib`) tồn tại trong thư mục `models`. Sau đó, mở terminal hoặc command prompt, điều hướng đến thư mục chứa file `gui.py` và chạy lệnh:
+Đảm bảo bạn đã huấn luyện mô hình thành công và các file model (`lung_cancer_svm.joblib`, `scaler.joblib`, `pca.joblib`) tồn tại trong thư mục `models`. Sau đó, mở terminal hoặc command prompt, điều hướng đến thư mục chứa file `inference_script.py` và chạy lệnh:
 
 ```bash
 [1] Cài đặt thư viện
