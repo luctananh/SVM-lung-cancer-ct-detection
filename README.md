@@ -86,13 +86,6 @@ python inference_script.py
 
 # Ứng dụng sẽ mở ra một cửa sổ, cho phép bạn chọn ảnh CT scan và nhận kết quả dự đoán.
 
-[1] Cài đặt thư viện
-pip install opencv-python scikit-learn scikit-image joblib tqdm argparse matplotlib imagehash
-[2] Chạy file train
-python training_script.py
-[3] chạy file app
-python inference_script.py
-
 ```
 Demo:
 ![image](https://github.com/user-attachments/assets/54820537-7815-4ce0-9b33-c781c3af28a7)
