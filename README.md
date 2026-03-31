@@ -6,22 +6,6 @@
 
 Đề tài này xây dựng một hệ thống phát hiện ung thư phổi từ ảnh chụp cắt lớp vi tính (CT scan) sử dụng các kỹ thuật xử lý ảnh và học máy. Hệ thống bao gồm một script để huấn luyện mô hình phân loại và một ứng dụng giao diện người dùng đồ họa (GUI) đơn giản để thực hiện dự đoán trên ảnh mới.
 
-## Cấu trúc dự án
-
-```
-.
-├── BCT_projeck_1/             # (Nếu có) Thư mục chứa các phần liên quan đến dự án BCT (không rõ mục đích cụ thể)
-├── dataset/
-│   ├── cancer/                # Chứa ảnh CT scan của bệnh nhân ung thư
-│   └── normal/                # Chứa ảnh CT scan của bệnh nhân không ung thư
-├── models/                    # Chứa các model đã huấn luyện (SVM, StandardScaler, PCA)
-├── test/                      # (Nếu có) Thư mục chứa các ảnh test riêng biệt
-├── huong an.txt               # File hướng dẫn (nếu có nội dung)
-├── inference_script.py        # Script ứng dụng GUI để dự đoán trên ảnh mới
-├── README.md                  # File hướng dẫn và mô tả dự án này
-└── training_script.py         # Script để huấn luyện mô hình phát hiện ung thư phổi
-```
-
 ## Các Thư Viện Sử Dụng
 
 Dự án này sử dụng các thư viện Python sau:
@@ -72,6 +56,7 @@ Script này cung cấp một ứng dụng GUI đơn giản, cho phép người d
 Mở terminal hoặc Command Prompt và chạy lệnh sau để cài đặt tất cả các thư viện Python yêu cầu:
 
 ```bash
+<<<<<<< HEAD
 pip install opencv-python scikit-learn scikit-image joblib tqdm matplotlib imagehash Pillow numpy
 ```
 
@@ -98,4 +83,21 @@ Sau khi mô hình đã được huấn luyện và lưu, bạn có thể chạy 
 python inference_script.py
 ```
 
-Ứng dụng sẽ mở ra một cửa sổ, cho phép bạn chọn ảnh CT scan và nhận kết quả dự đoán.
+# Ứng dụng sẽ mở ra một cửa sổ, cho phép bạn chọn ảnh CT scan và nhận kết quả dự đoán.
+
+[1] Cài đặt thư viện
+pip install opencv-python scikit-learn scikit-image joblib tqdm argparse matplotlib imagehash
+[2] Chạy file train
+python training_script.py
+[3] chạy file app
+python inference_script.py
+
+```
+Demo:
+![image](https://github.com/user-attachments/assets/54820537-7815-4ce0-9b33-c781c3af28a7)
+Hình 1:  test trên tập dữ liệu mới mẫu 1
+![image](https://github.com/user-attachments/assets/19818075-4c5d-462c-b3ac-137e4eea74e2)
+Hình 2: test trên dữ liệu mới mẫu 2
+
+>>>>>>> 0437ca9d89d311343d315aa9d246a2c7e87e5cdd
+```
