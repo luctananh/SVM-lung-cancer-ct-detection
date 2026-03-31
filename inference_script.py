@@ -5,59 +5,26 @@ import numpy as np
 import cv2
 import os
 from joblib import load
-from skimage.feature import hog, local_binary_pattern
 
-def preprocess_img(img, img_size=(512, 512)):
-    # 1. Resize đồng nhất
-    img = cv2.resize(img, img_size)
-    
-    # 2. Xử lý độ sáng tự động (Auto-Gain Control)
-    # Tính độ sáng trung bình hiện tại của tấm ảnh
-    mean_brightness = np.mean(img)
-    
-    # Mục tiêu đưa độ sáng về mức 105 (điểm tối ưu dựa trên Boxplot tập dataset)
-    target_mean = 105.0
-    
-    # Tính toán hệ số alpha để điều chỉnh (Target / Current)
-    # Ví dụ: Nếu ảnh quá tối (mean=80), alpha sẽ là ~1.3 -> Tăng sáng
-    # Nếu ảnh quá sáng (mean=150), alpha sẽ là ~0.7 -> Giảm sáng
-    alpha = target_mean / mean_brightness
-    
-    # Giới hạn alpha trong khoảng an toàn [0.7, 1.3] để tránh làm biến dạng ảnh quá mức
-    alpha = max(0.85, min(alpha, 1.3))
-    
-    # Áp dụng thay đổi độ sáng và tương phản
-    img = cv2.addWeighted(img, alpha, np.zeros(img.shape, img.dtype), 0, 0)
-    
-    # 3. Cân bằng độ tương phản cục bộ (CLAHE)
-    # Giúp làm nổi bật các nốt mờ, khối u sau khi đã cân bằng độ sáng tổng thể
-    clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
-    img = clahe.apply(img)
-    
-    # 4. Lọc nhiễu nhẹ
-    img = cv2.GaussianBlur(img, (3, 3), 0)
-    
-    # 5. Masking - Loại bỏ nhiễu nền ngoài vùng phổi
-    _, mask = cv2.threshold(img, 30, 255, cv2.THRESH_BINARY)
-    img = cv2.bitwise_and(img, img, mask=mask)
-    
-    return img / 255.0 # Chuẩn hóa về [0, 1] cho mô hình SVM
+import config
+import utils
 
 class LungCancerApp:
     def __init__(self, master):
         self.master = master
-        master.title("Hệ Thống Chẩn Đoán Ung Thư Phổi - SVM & CLAHE")
+        master.title("Hệ Thống Chẩn Đoán Ung Thư Phổi - SVM & Features")
         master.geometry("900x700")
         
         # Load model, scaler và PCA
         try:
             # Kiểm tra file tồn tại trước khi load
-            if not all(os.path.exists(f"models/{name}.joblib") for name in ["lung_cancer_svm", "scaler", "pca"]):
-                raise FileNotFoundError("Không tìm thấy các file model trong thư mục 'models/'")
+            model_files = [config.MODEL_NAME, config.SCALER_NAME, config.PCA_NAME]
+            if not all(os.path.exists(f"{config.MODEL_DIR}/{name}") for name in model_files):
+                raise FileNotFoundError(f"Không tìm thấy các file model trong thư mục '{config.MODEL_DIR}/'")
                 
-            self.model = load("models/lung_cancer_svm.joblib")
-            self.scaler = load("models/scaler.joblib")
-            self.pca = load("models/pca.joblib")
+            self.model = load(f"{config.MODEL_DIR}/{config.MODEL_NAME}")
+            self.scaler = load(f"{config.MODEL_DIR}/{config.SCALER_NAME}")
+            self.pca = load(f"{config.MODEL_DIR}/{config.PCA_NAME}")
         except Exception as e:
             messagebox.showerror("Lỗi hệ thống", f"Không thể tải mô hình: {str(e)}")
             self.master.destroy()
@@ -114,38 +81,46 @@ class LungCancerApp:
             img_gray = cv2.imread(file_path, cv2.IMREAD_GRAYSCALE)
             if img_gray is None: raise ValueError("Ảnh không hợp lệ")
             
-            # --- SỬA TẠI ĐÂY: Dùng hàm preprocess_img chuẩn ---
-            # Hàm này đã bao gồm: Resize, CLAHE, Blur và Masking
-            img_final = preprocess_img(img_gray) 
+            # Dùng hàm preprocess_img từ utils
+            img_final = utils.preprocess_img(img_gray) 
             
             # 2. Hiển thị ảnh lên giao diện
             # Ảnh gốc (giữ nguyên để người dùng xem)
             orig_pil = Image.open(file_path).convert("RGB")
-            orig_pil.thumbnail((350, 350))
+            orig_pil.thumbnail(config.UI_IMAGE_SIZE)
             photo_orig = ImageTk.PhotoImage(orig_pil)
             self.image_label.configure(image=photo_orig)
             self.image_label.image = photo_orig
             
             # Ảnh sau xử lý (Hiển thị bản img_final để kiểm tra bước Masking)
-            # Vì img_final là float [0, 1], cần nhân 255 và chuyển về uint8 để hiển thị
             proc_pil = Image.fromarray((img_final * 255).astype(np.uint8))
-            proc_pil.thumbnail((350, 350))
+            proc_pil.thumbnail(config.UI_IMAGE_SIZE)
             photo_proc = ImageTk.PhotoImage(proc_pil)
             self.processed_image_label.configure(image=photo_proc)
             self.processed_image_label.image = photo_proc
             
             # 3. Trích xuất đặc trưng (Dùng img_final đã chuẩn hóa)
-            features = self.extract_features_logic(img_final) # img_final đã là /255.0 rồi
+            features = self.extract_combined_features(img_final)
             
-            # 4. Dự đoán và cập nhật giao diện (Giữ nguyên phần dưới của bạn)
-            p_normal, p_cancer = self.predict_image(features)
+            # 4. Dự đoán và cập nhật giao diện
+            p_normal, p_cancer, confidence = self.predict_image_with_confidence(features)
             
-            # 5. Cập nhật giao diện
-            if p_cancer > p_normal:
-                msg = f"CẢNH BÁO: PHÁT HIỆN UNG THƯ ({p_cancer*100:.1f}%)"
+            # 5. Cập nhật giao diện theo confidence threshold
+            if confidence < config.MODEL_CONFIDENCE_THRESHOLD:
+                # Confidence thấp → không đủ tự tin
+                diff = abs(p_cancer - p_normal)
+                if diff < 0.1:
+                    msg = f"⚠️ KHÔNG RÕ RÀNG: {p_normal*100:.1f}% Bình thường vs {p_cancer*100:.1f}% Ung thư\n(Mô hình không đủ tự tin - chênh lệch < 10%)"
+                elif p_cancer > p_normal:
+                    msg = f"⚠️ CÓ KHUYNH HƯỚNG UNG THƯ: {p_cancer*100:.1f}%\n(Tin cậy chỉ {confidence*100:.1f}% < {config.MODEL_CONFIDENCE_THRESHOLD*100:.0f}% - Có thể do chất lượng ảnh)"
+                else:
+                    msg = f"⚠️ CÓ KHUYNH HƯỚNG BÌNH THƯỜNG: {p_normal*100:.1f}%\n(Tin cậy chỉ {confidence*100:.1f}% < {config.MODEL_CONFIDENCE_THRESHOLD*100:.0f}% - Có thể do chất lượng ảnh)"
+                color = "orange"
+            elif p_cancer > p_normal:
+                msg = f"🚨 CẢNH BÁO: PHÁT HIỆN UNG THƯ\n{p_cancer*100:.1f}% (Tin cậy: {confidence*100:.1f}%)"
                 color = "red"
             else:
-                msg = f"TÌNH TRẠNG: BÌNH THƯỜNG ({p_normal*100:.1f}%)"
+                msg = f"✓ TÌNH TRẠNG: BÌNH THƯỜNG\n{p_normal*100:.1f}% (Tin cậy: {confidence*100:.1f}%)"
                 color = "green"
                 
             self.result_text.set(msg)
@@ -154,28 +129,19 @@ class LungCancerApp:
         except Exception as e:
             messagebox.showerror("Lỗi xử lý", str(e))
 
-    def extract_features_logic(self, img_normalized):
-        """Logic trích xuất đặc trưng đồng bộ với file Training"""
-        # HOG
-        hog_feat = hog(
-            img_normalized, orientations=16, pixels_per_cell=(16, 16), 
-            cells_per_block=(3, 3), channel_axis=None
-        )
-        
-        # LBP
-        lbp = local_binary_pattern(img_normalized, 24, 3, method="uniform")
-        # Khớp số bins: np.arange(0, 27) tạo ra 26 bins cho method='uniform' với P=24
-        hist, _ = np.histogram(lbp.ravel(), bins=np.arange(0, 27), range=(0, 26))
-        hist = hist.astype("float")
-        hist /= (hist.sum() + 1e-7)
-        
-        return np.hstack([hog_feat, hist])
+    def extract_combined_features(self, img_normalized):
+        """Trích xuất HOG + LBP features đồng bộ với training"""
+        hog_feat = utils.extract_hog_features(img_normalized)
+        lbp_feat = utils.extract_lbp_features(img_normalized)
+        return np.hstack([hog_feat, lbp_feat])
 
-    def predict_image(self, features):
+    def predict_image_with_confidence(self, features):
+        """Dự đoán với confidence threshold"""
         scaled = self.scaler.transform([features])
         pca_feat = self.pca.transform(scaled)
         proba = self.model.predict_proba(pca_feat)[0]
-        return proba[0], proba[1] # p_normal, p_cancer
+        confidence = max(proba)  # Độ tin cậy = xác suất cao nhất
+        return proba[0], proba[1], confidence  # p_normal, p_cancer, confidence
 
 if __name__ == "__main__":
     root = tk.Tk()
