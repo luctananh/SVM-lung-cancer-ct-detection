@@ -13,7 +13,6 @@
 ├── utils.py                     # Các hàm tiện ích (preprocessing, feature extraction)
 ├── training_script.py           # Script huấn luyện mô hình
 ├── inference_script.py          # GUI dự đoán
-├── debug_test.py               # Script debug để kiểm tra preprocessing
 ├── models/                      # Thư mục chứa các file mô hình
 │   ├── lung_cancer_svm.joblib
 │   ├── scaler.joblib
