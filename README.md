@@ -16,8 +16,10 @@ Dự án này sử dụng các thư viện Python sau:
 - `joblib`
 - `tqdm`
 - `PIL` (Pillow)
-- `tkinter`
 - `numpy`
+- `matplotlib`
+- `imagehash`
+- `tkinter`
 
 ## Cách Hoạt Động Của Code
 
@@ -56,8 +58,7 @@ Script này cung cấp một ứng dụng GUI đơn giản, cho phép người d
 Mở terminal hoặc Command Prompt và chạy lệnh sau để cài đặt tất cả các thư viện Python yêu cầu:
 
 ```bash
-<<<<<<< HEAD
-pip install opencv-python scikit-learn scikit-image joblib tqdm matplotlib imagehash Pillow numpy
+pip install -r requirements.txt
 ```
 
 ### 2. Chuẩn bị dữ liệu

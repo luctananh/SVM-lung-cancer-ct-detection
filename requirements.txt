@@ -4,3 +4,6 @@ scikit-image
 scikit-learn
 joblib
 tqdm
+Pillow
+matplotlib
+imagehash
