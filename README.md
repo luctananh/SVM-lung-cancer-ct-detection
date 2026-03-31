@@ -84,14 +84,12 @@ Sau khi mô hình đã được huấn luyện và lưu, bạn có thể chạy 
 python inference_script.py
 ```
 
-# Ứng dụng sẽ mở ra một cửa sổ, cho phép bạn chọn ảnh CT scan và nhận kết quả dự đoán.
+Ứng dụng sẽ mở ra một cửa sổ, cho phép bạn chọn ảnh CT scan và nhận kết quả dự đoán.
 
-```
-Demo:
+## Demo
+
+**Hình 1: Test trên tập dữ liệu mới - Mẫu 1**
 ![image](https://github.com/user-attachments/assets/54820537-7815-4ce0-9b33-c781c3af28a7)
-Hình 1:  test trên tập dữ liệu mới mẫu 1
-![image](https://github.com/user-attachments/assets/19818075-4c5d-462c-b3ac-137e4eea74e2)
-Hình 2: test trên dữ liệu mới mẫu 2
 
->>>>>>> 0437ca9d89d311343d315aa9d246a2c7e87e5cdd
-```
+**Hình 2: Test trên dữ liệu mới - Mẫu 2**
+![image](https://github.com/user-attachments/assets/19818075-4c5d-462c-b3ac-137e4eea74e2)
