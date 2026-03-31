@@ -20,27 +20,37 @@ def preprocess_img(img, img_size=(512, 512)):
     # 1. Resize đồng nhất
     img = cv2.resize(img, img_size)
     
-    # 2. Xử lý ảnh cháy sáng (Overexposure)
-    # Tính giá trị trung bình để kiểm tra độ sáng toàn cục
+    # 2. Xử lý độ sáng tự động (Auto-Gain Control)
+    # Tính độ sáng trung bình hiện tại của tấm ảnh
     mean_brightness = np.mean(img)
-    if mean_brightness > 180:
-        # Giảm cường độ sáng xuống 50% để tránh mất chi tiết khi chạy CLAHE
-        img = cv2.addWeighted(img, 0.5, np.zeros(img.shape, img.dtype), 0, 0)
     
-    # 3. Cân bằng độ tương phản (CLAHE) - "Kính lúp" cho khối u
-    # Tăng clipLimit lên 3.0 giúp các khối u mờ hiện rõ hơn
+    # Mục tiêu đưa độ sáng về mức 105 (điểm tối ưu dựa trên Boxplot tập dataset)
+    target_mean = 105.0
+    
+    # Tính toán hệ số alpha để điều chỉnh (Target / Current)
+    # Ví dụ: Nếu ảnh quá tối (mean=80), alpha sẽ là ~1.3 -> Tăng sáng
+    # Nếu ảnh quá sáng (mean=150), alpha sẽ là ~0.7 -> Giảm sáng
+    alpha = target_mean / mean_brightness
+    
+    # Giới hạn alpha trong khoảng an toàn [0.85, 1.3] để tránh làm biến dạng ảnh quá mức
+    alpha = max(0.85, min(alpha, 1.3))
+    
+    # Áp dụng thay đổi độ sáng và tương phản
+    img = cv2.addWeighted(img, alpha, np.zeros(img.shape, img.dtype), 0, 0)
+    
+    # 3. Cân bằng độ tương phản cục bộ (CLAHE)
+    # Giúp làm nổi bật các nốt mờ, khối u sau khi đã cân bằng độ sáng tổng thể
     clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
     img = clahe.apply(img)
     
-    # 4. Lọc nhiễu nhẹ để làm mượt các hạt nhiễu kỹ thuật số
+    # 4. Lọc nhiễu nhẹ
     img = cv2.GaussianBlur(img, (3, 3), 0)
     
-    # 5. Loại bỏ vùng đen và nhiễu viền (Masking)
-    # Giúp HOG không bị đánh lừa bởi các đường biên không phải phổi
+    # 5. Masking - Loại bỏ nhiễu nền ngoài vùng phổi
     _, mask = cv2.threshold(img, 30, 255, cv2.THRESH_BINARY)
     img = cv2.bitwise_and(img, img, mask=mask)
     
-    return img / 255.0 # Chuẩn hóa về [0, 1]
+    return img / 255.0 # Chuẩn hóa về [0, 1] cho mô hình SVM
 
 # ----------- [3] Hàm xử lý dữ liệu và trích xuất -----------
 def load_dataset(data_dir, img_size=(512, 512)):

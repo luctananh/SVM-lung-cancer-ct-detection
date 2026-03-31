@@ -49,9 +49,6 @@ class LungCancerApp:
         master.title("Hệ Thống Chẩn Đoán Ung Thư Phổi - SVM & CLAHE")
         master.geometry("900x700")
         
-        # Khởi tạo bộ lọc CLAHE (Phải khớp tham số với lúc Train)
-        self.clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-        
         # Load model, scaler và PCA
         try:
             # Kiểm tra file tồn tại trước khi load
