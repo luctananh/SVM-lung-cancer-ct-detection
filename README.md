@@ -76,8 +76,6 @@ Script này cung cấp một ứng dụng GUI đơn giản, cho phép người d
 
 ## Hướng dẫn cài đặt và chạy
 
-## Hướng dẫn cài đặt và chạy
-
 Để cài đặt và chạy dự án, làm theo các bước sau:
 
 ### 1. Cài đặt các thư viện cần thiết
